@@ -27,7 +27,7 @@ function twix_obj = mapVBVD(filename,varargin)
 %           correction (currently only supported for VB software version).
 %  15.01.13 Thanks to Zhitao Li for proper handling of SYNCDATA.
 %  Philipp Ehses 28.08.13, added support for VD13 multi-raid files
-%  Michael Völker May-Aug 15 * Better error tolerance with incomplete files.
+%  Michael V??lker May-Aug 15 * Better error tolerance with incomplete files.
 %                          * Swapped out parsing loop into a separate function
 %                            without access to twix object (no thousands of subsref calls).
 %                          * For parsing, use an as-minimalistic-as-possible loop
@@ -44,9 +44,10 @@ function twix_obj = mapVBVD(filename,varargin)
 %                          * => Parsing speed improved by factor 3...7 or so
 %                          * Speed increase for reading data, esp. when slicing,
 %                            os-removal or reflected lines. Also for random acquisitions.
-% Jonas Bause,    18.11.16   receiver phase for ramp-sampling fixed, now takes into account  
-%   Chris Mirkes & PE        offcenter shifts in readout direction
-% 
+%  Jonas Bause   18.11.16, receiver phase for ramp-sampling fixed, now takes into account  
+%  Chris Mirkes & PE       offcenter shifts in readout direction
+%  H.-L. Lee     06.04.23, extract PMU data to twix_obj.PMUdata for XA2* & XA3* systems.
+%                          store both raw and interpolated waveforms.
 % 
 % Input:
 % 
@@ -417,7 +418,10 @@ for s=1:NScans
     % find all mdhs and save them in binary form, first:
     fprintf('Scan %d/%d, read all mdhs:\n', s, NScans )
 
-    [mdh_blob, filePos, isEOF] = loop_mdh_read( fid, version, NScans, s, measOffset{s}, measLength{s});  % uint8; size: [ byteMDH  Nmeas ]
+    % H.-L. Lee, add return PMU data
+    temp = regexp(twix_obj{s}.hdr.Dicom.SoftwareVersions,' ','split');
+    VerString = temp{end};
+    [mdh_blob, filePos, isEOF, mdh_syncdata] = loop_mdh_read( fid, version, NScans, s, measOffset{s}, measLength{s}, VerString);  % uint8; size: [ byteMDH  Nmeas ]
 
     cPos = filePos( end );
     filePos( end ) = [];
@@ -537,6 +541,16 @@ for s=1:NScans
         twix_obj{s}.refscanPSRef1.readMDH( tmpMdh, filePos(isCurrScan) );
     end
     clear  mdh  tmpMdh  filePos  isCurrScan
+    
+    % H.-L. Lee, extract PMU data from mdh and interpolatethe waveforms to
+    % match image timestamps
+    try
+        PMUdata = evalMDH_syncData( mdh_syncdata, version, twix_obj{s}.image.timestamp);
+        twix_obj{s}.PMUdata = PMUdata;
+    catch
+        fprintf('extract PMU data failed.\n');
+    end
+    clear PMUdata mdh_syncdata
 
     for scan = { 'image', 'noise', 'phasecor', 'phasestab', ...
                  'phasestabRef0', 'phasestabRef1', 'refscan', ...
@@ -567,8 +581,7 @@ end % of mapVBVD()
 
 
 
-
-function [mdh_blob, filePos, isEOF] = loop_mdh_read( fid, version, Nscans, scan, measOffset, measLength)
+function [mdh_blob, filePos, isEOF, mdh_syncdata] = loop_mdh_read( fid, version, Nscans, scan, measOffset, measLength, VerString)
 % Goal of this function is to gather all mdhs in the dat file and store them
 % in binary form, first. This enables us to evaluate and parse the stuff in
 % a MATLAB-friendly (vectorized) way. We also yield a clear separation between
@@ -613,6 +626,16 @@ function [mdh_blob, filePos, isEOF] = loop_mdh_read( fid, version, Nscans, scan,
     szBlob   = size( mdh_blob, 2 );
     filePos  = zeros(0, 1, class(cPos));  % avoid bug in Matlab 2013b: https://scivision.co/matlab-fseek-bug-with-uint64-offset/
 
+    % H.-L. Lee, setup for PMU data
+    if strncmp(VerString,'XA3',3)
+        syncdata_length = 1632;
+    elseif strncmp(VerString,'XA2',3)
+        syncdata_length = 1120;
+    else
+        syncdata_length = 0;
+    end
+    mdh_syncdata = zeros(syncdata_length,0,'uint8');
+    
     fseek(fid,cPos,'bof');
 
     % ======================================
@@ -693,9 +716,20 @@ function [mdh_blob, filePos, isEOF] = loop_mdh_read( fid, version, Nscans, scan,
             end
         end
         if bitand(bitMask, bit_5)   % MDH_SYNCDATA
-            data_u8(4)= bitget( data_u8(4),1);  % ubit24: keep only 1 bit from the 4th byte
-            ulDMALength = double( typecast( data_u8(1:4), 'uint32' ) );
-            cPos = cPos + ulDMALength;
+            % H.-L. Lee, store PMU data in mdh_syncdata
+            temp = data_u8;
+            temp(4)= bitget( temp(4),1);  % ubit24: keep only 1 bit from the 4th byte
+            SYNCDATALength = double( typecast( temp(1:4), 'uint32' ) );
+            try
+                ulDMALength = byteMDH;
+                data_u8_tail = fread( fid, SYNCDATALength - ulDMALength, 'uint8=>uint8' );
+            catch
+                ulDMALength = byteMDH;
+            end
+            cPos = cPos + SYNCDATALength;
+            if SYNCDATALength == syncdata_length
+                mdh_syncdata(:,end+1) = [data_u8;data_u8_tail];
+            end
             continue
         end
 
@@ -835,3 +869,75 @@ end
 mask.MDH_IMASCAN( noImaScan ) = 0;
 
 end % of evalMDH()
+
+
+% H.-L. Lee, read PMU data and timestamps and store them in the mdh struct
+function PMUdata = evalMDH_syncData( mdh_blob, version ,timestamps)
+
+vec = @(x) x(:);
+
+if ~isa( mdh_blob, 'uint8' )
+    error([mfilename() ':NoInt8'], 'mdh data must be a uint8 array!')
+end
+
+if version(end) == 'd'
+    isVD = true;
+    mdh_blob = mdh_blob([1:20 41:end], :);  % remove 20 unnecessary bytes
+else
+    isVD = false;
+end
+
+Nmeas   = size( mdh_blob, 2 );
+
+mdh.ulPackBit = bitget( mdh_blob(4,:), 2).';
+mdh.ulPCI_rx  = bitset(bitset(mdh_blob(4,:), 7, 0), 8, 0).'; % keep 6 relevant bits
+mdh_blob(4,:) = bitget( mdh_blob(4,:),1);  % ubit24: keep only 1 bit from the 4th byte
+
+% unfortunately, typecast works on vectors only
+data_uint32 = typecast( reshape(mdh_blob(1:76,:),  [],1), 'uint32' );
+data_uint16 = typecast( reshape(mdh_blob(257:end,:),[],1), 'uint16' );
+
+data_uint32 = reshape( data_uint32, [], Nmeas );
+data_uint16 = reshape( data_uint16, [], Nmeas );
+                                                        %  byte pos.
+mdh.ulDMALength = data_uint32(1,:);      %   1 :   4
+mdh.ulTimeStamp = data_uint32(4,:).';    %  13 :  16
+
+mdh.EKG.data  = [vec(data_uint16(1:2:80,:)) vec(data_uint16(85:2:164,:)) vec(data_uint16(169:2:248,:)) vec(data_uint16(253:2:332,:))];
+mdh.PULS.data = vec(data_uint16(337:2:376,:));
+mdh.RESP.data = vec(data_uint16(381:2:390,:));
+mdh.EXT.data  = [vec(data_uint16(395:2:404,:)) vec(data_uint16(409:2:418,:))];
+
+timeStamp40 = interp1(0:40:40*Nmeas-1,double(mdh.ulTimeStamp),1:40*Nmeas,'linear','extrap').';
+timeStamp20 = interp1(0:20:20*Nmeas-1,double(mdh.ulTimeStamp),1:20*Nmeas,'linear','extrap').';
+timeStamp05 = interp1(0:5:5*Nmeas-1,  double(mdh.ulTimeStamp), 1:5*Nmeas,'linear','extrap').';
+
+mdh.EKG.TimeStamp  = timeStamp40;
+mdh.PULS.TimeStamp = timeStamp20;
+mdh.RESP.TimeStamp = timeStamp05;
+mdh.EXT.TimeStamp  = timeStamp05;
+try
+    mdh.EVNT.data = vec(data_uint16(423:2:502,:));
+    mdh.EVNT.TimeStamp = timeStamp40;
+catch
+    mdh.EVNT.data = zeros(40,1);
+    mdh.EVNT.TimeStamp = timeStamp40;
+end
+
+PMUdata.raw = mdh;
+try
+    PMUdata.EKG  = interp1(mdh.EKG.TimeStamp, double(mdh.EKG.data), double(timestamps),'linear','extrap').';
+    PMUdata.PULS = interp1(mdh.PULS.TimeStamp,double(mdh.PULS.data),double(timestamps),'linear','extrap');
+    PMUdata.RESP = interp1(mdh.RESP.TimeStamp,double(mdh.RESP.data),double(timestamps),'linear','extrap');
+    PMUdata.EXT  = interp1(mdh.EXT.TimeStamp, double(mdh.EXT.data), double(timestamps),'linear','extrap').';
+    PMUdata.EVNT = interp1(mdh.EVNT.TimeStamp,double(mdh.EVNT.data),double(timestamps),'linear','extrap');
+catch
+    PMUdata.EKG   = zeros(4,numel(timestamps));
+    PMUdata.PULS  = zeros(1,numel(timestamps));
+    PMUdata.RESP  = zeros(1,numel(timestamps));
+    PMUdata.EXT   = zeros(2,numel(timestamps));
+    PMUdata.EVNT  = zeros(1,numel(timestamps));
+    fprintf('PMU data interpolation failed.\n');
+end
+    
+end % of evalMDH_syncData()
