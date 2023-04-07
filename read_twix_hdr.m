@@ -94,13 +94,35 @@ function xprot = parse_xprot(buffer)
         if (~isletter(name(1)))
             name = strcat('x', name);
         end
-
-        value = char(strtrim(regexprep(tokens{m}(end), '("*)|( *<\w*> *[^\n]*)', '')));
-        value = regexprep(value, '\s*', ' ');
-
+        
+        % H.-L. Lee 05/06/2022
+        % Special handling for tFree
+        if strcmp(name,'tFree')
+            value = char(strtrim(regexprep(tokens{m}(end), '("{)', '{')));    % remove " at the beginning
+            value = char(strtrim(regexprep(value, '( *<\w*> *[^\n]*)', ''))); % remove tag
+            %value = char(strtrim(regexprep(value, '(\s)', '')));
+            value = char(strtrim(regexprep(value, '("*)', '"')));   % remove double "
+            value = char(strtrim(regexprep(value, '([\n])', '')));  % remove line break
+            
+        else
+            value = char(strtrim(regexprep(tokens{m}(end), '("*)|( *<\w*> *[^\n]*)', '')));
+            value = regexprep(value, '\s*', ' ');
+        end
         try %#ok<TRYNC>
             value = eval(['[' value ']']);  % inlined str2num()
         end
+
+        % H.-L. Lee 11/03/2021
+        % Do not overwrite if current field already exists with non-empty value
+        % Except for tFree
+        if isfield(xprot,name)
+            %if (sum(xprot.(name))~=0 || ~isempty(xprot.(name))) && ~(strcmp(name,'tFree') && ischar(value))
+            if (strcmp(xprot.(name),char(0)) || ~isempty(xprot.(name))) && ~(strcmp(name,'tFree') && ischar(value))
+                value = xprot.(name);
+            elseif (strcmp(name,'tFree') && strcmp(xprot.(name),char(0)) && ~isempty(xprot.(name)))
+                value = xprot.(name);
+            end
+        end 
 
         xprot.(name) = value;
     end
