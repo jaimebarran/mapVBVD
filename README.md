@@ -1,5 +1,7 @@
 # mapVBVD
 
+This version also export physiological data recorded in Numaris/X rawdata.
+
 Reads Siemens raw .dat file from VB/VD MRI raw data.
 
 Author: Philipp Ehses (philipp.ehses@dzne.de)
