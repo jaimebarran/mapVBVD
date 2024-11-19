@@ -1,3 +1,54 @@
 *~
+# MATLAB temporary files
+*.asv
+*.m~
+*.mat
+*.mlx
+*.mlappinstall
 
-/data
+# MATLAB cache and logs
+*.mlapp
+*.mlpkginstall
+*.slxc
+*.mdl.autosave
+*.log
+
+# Simulink autosave and backup
+*.autosave
+*.slx.autosave
+
+# MATLAB Desktop layout files
+*.prj
+*.mlproj
+
+# Binary and compiled files
+*.mex*
+*.p
+*.out
+*.o
+
+# User-specific files
+*.user.matlab.mat
+*.user.matlab.slx
+
+# MATLAB project and session files
+*.mlproj
+*.sldd
+
+# Hidden system files
+.DS_Store
+Thumbs.db
+
+# Miscellaneous temporary or OS files
+*.swp
+*.bak
+*.tmp
+
+# Folders
+**/slprj/
+**/work/
+**/codegen/
+
+# Data/Output files
+data/
+fix_jaime/twix.mat
