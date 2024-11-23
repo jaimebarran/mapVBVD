@@ -1,7 +1,8 @@
 %%
-raw_data = ['/home/debi/jaime/acquisitions/Yiwei/' ...
+raw_data = ['/Users/cag/Documents/Dataset/' ...
     '20241002_MRIAcquisition_Yiwei/PrePilot_YiweiJia/Raw/' ...
     'meas_MID00273_FID178443_BEAT_LIBREon_T2_eye_(23_09_24).dat'];
+<<<<<<< Updated upstream
 twix = mapVBVD_JB(raw_data);
 
 %%
@@ -9,6 +10,9 @@ raw_data = ['/home/debi/jaime/repos/mapVBVD/data/' ...
     'MultiRaidFileExtract_ECG_demo-20241115T103256Z-001/' ...
     'MultiRaidFileExtract_ECG_demo/data/meas_MID00211_FID122713_BEAT_2Dga_baseline.dat'];
 twix = mapVBVD_JB(raw_data);
+=======
+twix = mapVBVD_lee(raw_data);
+>>>>>>> Stashed changes
 
 %%
 % return all image-data
