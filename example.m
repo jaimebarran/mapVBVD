@@ -1,9 +1,24 @@
 %%
+<<<<<<< Updated upstream
 raw_data = ['/Users/cag/Documents/Dataset/' ...
     '20241002_MRIAcquisition_Yiwei/PrePilot_YiweiJia/Raw/' ...
     'meas_MID00273_FID178443_BEAT_LIBREon_T2_eye_(23_09_24).dat'];
 <<<<<<< Updated upstream
+=======
+% subj1
+% raw_data_name = 'meas_MID00605_FID182859_BEAT_LIBREon_eye_(23_09_24)';
+% subj2
+% raw_data_name = 'meas_MID00580_FID182834_BEAT_LIBREon_eye_(23_09_24)';
+% subj3
+raw_data_name = 'meas_MID00554_FID182808_BEAT_LIBREon_eye_(23_09_24)';
+
+raw_data_file = [raw_data_name, '.dat'];
+raw_data = ['/home/debi/jaime/' ...
+    'acquisitions/MREyeTrack/MREyeTrack_subj3/RawData_MREyeTrack_Subj3/' ...
+    raw_data_file];
+>>>>>>> Stashed changes
 twix = mapVBVD_JB(raw_data);
+save(['twix_',raw_data_name,'.mat'], 'twix')
 
 %%
 raw_data = ['/home/debi/jaime/repos/mapVBVD/data/' ...
