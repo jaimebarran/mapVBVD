@@ -3,22 +3,31 @@ subject_num = 2;
 
 if subject_num == 1
     rawdata_name = 'meas_MID00605_FID182859_BEAT_LIBREon_eye_(23_09_24)';
+
     twix = load(['/Users/cag/Documents/Dataset/MREyeTrack/Twix/Twix' ...
         '/twix_subj1_meas_MID00605_FID182859_BEAT_LIBREon_eye_(23_09_24).mat']);
-    datadir = ['/home/debi/jaime/acquisitions/MREyeTrack/' ...
-    'MREyeTrack_subj1/RawData_MREyeTrack_Subj1/'];  
+
+    twix = load(['/home/debi/jaime/acquisitions/MREyeTrack/' ...
+        'Twix/twix_subj1_meas_MID00605_FID182859_BEAT_LIBREon_eye_(23_09_24).mat']);
+
 elseif subject_num == 2
     rawdata_name = 'meas_MID00580_FID182834_BEAT_LIBREon_eye_(23_09_24)';
-    twix = load(['/Users/cag/Documents/Dataset/MREyeTrack/Twix/Twix' ...
+
+    // twix = load(['/Users/cag/Documents/Dataset/MREyeTrack/Twix/Twix' ...
         '/twix_subj2_meas_MID00580_FID182834_BEAT_LIBREon_eye_(23_09_24).mat']);
-    datadir = ['/home/debi/jaime/acquisitions/MREyeTrack/' ...
-    'MREyeTrack_subj2/RawData_MREyeTrack_Subj2/'];  
+
+    twix = load(['/home/debi/jaime/acquisitions/MREyeTrack/' ...
+        'Twix/twix_subj2_meas_MID00580_FID182834_BEAT_LIBREon_eye_(23_09_24).mat']);
+
 else
     rawdata_name = 'meas_MID00554_FID182808_BEAT_LIBREon_eye_(23_09_24)';
+
     twix = load(['/Users/cag/Documents/Dataset/MREyeTrack/Twix/Twix' ...
         '/twix_subj3_meas_MID00554_FID182808_BEAT_LIBREon_eye_(23_09_24).mat']);
-    datadir = ['/home/debi/jaime/acquisitions/MREyeTrack/' ...
-    'MREyeTrack_subj3/RawData_MREyeTrack_Subj3/'];  
+
+    twix = load(['/home/debi/jaime/acquisitions/MREyeTrack/' ...
+        'Twix/twix_subj3_meas_MID00554_FID182808_BEAT_LIBREon_eye_(23_09_24).mat']);
+ 
 end
 
 twix_image2 = twix.twix{1,2};
@@ -38,7 +47,7 @@ raw_pmu_ext = array2table([rawTimestamp'; rawTime_ms(:)' ; ext1(:)'; ext2(:)']',
 
 %%
 rawdatafile = fullfile(datadir,strcat(rawdata_name, '.dat')); 
- 
+
 twix_obj = mapVBVD_JH(rawdatafile);
 twix_obj = twix_obj{end};
 % time stamps from the rawdata
@@ -78,7 +87,6 @@ report{6,1}='raw_pmu_mark'; report{6,2}=raw_pmu_mark;
 report{7,1}='mri_timestp_start'; report{7,2}=mriTimeStamp(1);
 report{8,1}='mri_timestp_end'; report{8,2}=mriTimeStamp(end);
 report{9,1}='mriTimeStamp'; report{9,2}=mriTimeStamp;
-%%
 report{10,1}='ET_trigger_dot'; 
 %
 if subject_num == 1
@@ -94,6 +102,9 @@ end
 
 report{11,1}='ET_offset_first_dot_mriStart'; report{11,2}=trigger_interval - report{10,2} - (report{3,2}-report{1,2})*2.5;
 disp('The report cell is generated!')
+
+
+
 %%
 
 reportPath = ['/home/debi/jaime/acquisitions/MREyeTrack/Twix/' ...
