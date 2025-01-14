@@ -1,5 +1,5 @@
 clc; clear all;
-subject_num = 3;
+subject_num = 2;
 
 if subject_num == 1
     rawdata_name = 'meas_MID00605_FID182859_BEAT_LIBREon_eye_(23_09_24)';
@@ -78,7 +78,22 @@ report{6,1}='raw_pmu_mark'; report{6,2}=raw_pmu_mark;
 report{7,1}='mri_timestp_start'; report{7,2}=mriTimeStamp(1);
 report{8,1}='mri_timestp_end'; report{8,2}=mriTimeStamp(end);
 report{9,1}='mriTimeStamp'; report{9,2}=mriTimeStamp;
+report{10,1}='ET_trigger_dot'; 
+%
+if subject_num == 1
+    report{10,2}=498;
+    trigger_interval = 1989.4;
+elseif subject_num == 2
+    report{10,2}=497;
+    trigger_interval = 2006.6;
+elseif subject_num == 3
+    report{10,2}=496;
+    trigger_interval = 1994;
+end
+
+report{11,1}='ET_offset_first_dot_mriStart'; report{11,2}=trigger_interval - report{10,2} - (report{3,2}-report{1,2})*2.5;
 disp('The report cell is generated!')
+
 %%
 
 reportPath = ['/home/debi/jaime/acquisitions/MREyeTrack/Twix/' ...
