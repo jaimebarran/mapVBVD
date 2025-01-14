@@ -38,7 +38,7 @@ raw_pmu_ext = array2table([rawTimestamp'; rawTime_ms(:)' ; ext1(:)'; ext2(:)']',
 
 %%
 rawdatafile = fullfile(datadir,strcat(rawdata_name, '.dat')); 
- 
+
 twix_obj = mapVBVD_JH(rawdatafile);
 twix_obj = twix_obj{end};
 % time stamps from the rawdata
