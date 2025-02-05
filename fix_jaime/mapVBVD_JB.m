@@ -972,14 +972,21 @@ try
     PMUdata.PULS = interp1(mdh.PULS.TimeStamp,double(mdh.PULS.data),double(timestamps),'linear','extrap');
     PMUdata.RESP = interp1(mdh.RESP.TimeStamp,double(mdh.RESP.data),double(timestamps),'linear','extrap');
     PMUdata.EXT  = interp1(mdh.EXT.TimeStamp, double(mdh.EXT.data), double(timestamps),'linear','extrap').';
-    PMUdata.EVNT = interp1(mdh.EVNT.TimeStamp,double(mdh.EVNT.data),double(timestamps),'linear','extrap');
+    disp(['sum of mdh.EXT.data: ', num2str(sum(sum(mdh.EXT.data)))])
+    disp(['sum of PMUdata.EXT: ', num2str(sum(sum(PMUdata.EXT)))])    
 catch
     PMUdata.EKG   = zeros(4,numel(timestamps));
     PMUdata.PULS  = zeros(1,numel(timestamps));
     PMUdata.RESP  = zeros(1,numel(timestamps));
     PMUdata.EXT   = zeros(2,numel(timestamps));
+    fprintf('PMU EKG/PULS/RESP/EXT data interpolation failed.\n');
+end
+
+try
+    PMUdata.EVNT = interp1(mdh.EVNT.TimeStamp,double(mdh.EVNT.data),double(timestamps),'linear','extrap');
+catch
     PMUdata.EVNT  = zeros(1,numel(timestamps));
-    fprintf('PMU data interpolation failed.\n');
+    fprintf('PMU EVNT data interpolation failed.\n');
 end
     
 end % of evalMDH_syncData()
