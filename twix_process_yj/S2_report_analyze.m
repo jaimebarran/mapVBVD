@@ -5,26 +5,26 @@
 % i.e. the offset from the first trigger to the start of MRI start.
 %%
 clc; clear all;
-subject_num = 2;
+subject_num = 1;
 %%
 if subject_num == 1
     rawdata_name = 'meas_MID00605_FID182859_BEAT_LIBREon_eye_(23_09_24)';
-    twix = load(['/home/debi/jaime/acquisitions/MREyeTrack/' ...
-        'Twix/twix_subj1_meas_MID00605_FID182859_BEAT_LIBREon_eye_(23_09_24).mat']);
-    datadir = ['/home/debi/jaime/acquisitions/MREyeTrack/' ...
-    'MREyeTrack_subj1/RawData_MREyeTrack_Subj1/'];  
+    twix = load(['/home/debi/jaime/mreye_track/data/pilot/Twix/' ...
+        'twix_subj1_meas_MID00605_FID182859_BEAT_LIBREon_eye_(23_09_24).mat']);
+    datadir = ['/home/debi/jaime/mreye_track/data/pilot/' ...
+        'sub-01/rawdata/meas_MID00605_FID182859_BEAT_LIBREon_eye_(23_09_24).dat'];  
 elseif subject_num == 2
     rawdata_name = 'meas_MID00580_FID182834_BEAT_LIBREon_eye_(23_09_24)';
-    twix = load(['/home/debi/jaime/acquisitions/MREyeTrack/' ...
-        'Twix/twix_subj2_meas_MID00580_FID182834_BEAT_LIBREon_eye_(23_09_24).mat']);
-    datadir = ['/home/debi/jaime/acquisitions/MREyeTrack/' ...
-    'MREyeTrack_subj2/RawData_MREyeTrack_Subj2/'];  
+    twix = load(['/home/debi/jaime/mreye_track/data/pilot/Twix/' ...
+        'twix_subj2_meas_MID00580_FID182834_BEAT_LIBREon_eye_(23_09_24).mat']);
+    datadir = ['/home/debi/jaime/mreye_track/data/pilot/' ...
+        'sub-02/rawdata/meas_MID00580_FID182834_BEAT_LIBREon_eye_(23_09_24).dat'];  
 else
     rawdata_name = 'meas_MID00554_FID182808_BEAT_LIBREon_eye_(23_09_24)';
-    twix = load(['/home/debi/jaime/acquisitions/MREyeTrack/' ...
-        'Twix/twix_subj3_meas_MID00554_FID182808_BEAT_LIBREon_eye_(23_09_24).mat']);
-    datadir = ['/home/debi/jaime/acquisitions/MREyeTrack/' ...
-    'MREyeTrack_subj3/RawData_MREyeTrack_Subj3/'];  
+    twix = load(['/home/debi/jaime/mreye_track/data/pilot/Twix/' ...
+        'twix_subj3_meas_MID00554_FID182808_BEAT_LIBREon_eye_(23_09_24).mat']);
+    datadir = ['/home/debi/jaime/mreye_track/data/pilot/' ...
+        'sub-03/rawdata/meas_MID00554_FID182808_BEAT_LIBREon_eye_(23_09_24).dat'];  
 end
 
 %%
