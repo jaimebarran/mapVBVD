@@ -30,15 +30,33 @@ end
 %% Compare Coil Orders Across Subjects
 fprintf('\n=== Coil Order Comparison ===\n');
 
-num_coils = length(CoilNames{1});
+% Find the subject with the highest number of coils
+num_coils = max(cellfun(@length, CoilNames));  % Get the maximum number of coils
 
 for i = 1:num_coils
     fprintf('Coil %d: ', i);
-    names = cellfun(@(c) c{i}, CoilNames, 'UniformOutput', false);
+    fprintf('\n');
     
-    if isequal(names{:})
+    % Get the coil name for each subject, safely handle exceeding indices
+    names = cell(1, length(subjects));  % Initialize a cell array for names
+    for subj = 1:length(subjects)
+        if i <= length(CoilNames{subj})  % Check if the coil index is valid for the subject
+            names{subj} = CoilNames{subj}{i};  % Assign the coil name
+        else
+            names{subj} = 'None';  % Assign 'None' if the index is out of bounds
+        end
+    end
+    
+    % Debug: Print the sizes of CoilNames for each subject
+    fprintf('Coil list sizes: ');
+    fprintf('%d ', cellfun(@length, CoilNames));  % This will print the number of coils for each subject
+    fprintf('\n');
+    
+    if all(cellfun(@(x) strcmp(x, names{1}), names))
         fprintf('%s (Same in all subjects)\n', names{1});
     else
-        fprintf('Different across subjects: %s | %s | %s\n', names{:});
+        fprintf('Different across subjects: ');
+        fprintf('%s ', names{:});  % Dynamically print the names for all subjects
+        fprintf('\n');
     end
 end
