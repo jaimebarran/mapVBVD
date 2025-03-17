@@ -28,7 +28,7 @@ for subj = 1:length(subjects)
 end
 
 %% Compare Coil Orders Across Subjects
-fprintf('\n=== Coil Order Comparison ===\n');
+fprintf('=== Coil Order Comparison ===\n');
 
 % Find the subject with the highest number of coils
 num_coils = max(cellfun(@length, CoilNames));  % Get the maximum number of coils
@@ -77,7 +77,7 @@ for i = 1:length(CoilNames)
 end
 
 % Print the header and channel counts
-fprintf('=== Reordered Coil IDs ===\n');
+fprintf('\n=== Reordered Coil IDs ===\n');
 fprintf('Channels: %d %d %d \n\n', numel(CoilNamesReordered{1}), numel(CoilNamesReordered{2}), numel(CoilNamesReordered{3}));
 
 % Loop through and print each coil with its corresponding IDs
