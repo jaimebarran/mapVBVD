@@ -8,13 +8,19 @@
 %%
 clc; clear all;
 subject_num = 1;
-meas_name = ['meas', '_MID00332_FID214628_BEAT_LIBREon_eye_(23_09_24)_sc_trigger'];
-raw_data = ['/Users/cag/Documents/Dataset/250127_acquisition/', meas_name,'.dat'];
+% meas_MID00177_FID317803_yj_seq2
+% meas_MID00182_FID317808_JB_LIBRE2p2_a8_woPERewinder
+raw_data_idea = ['/Users/cag/Documents/Dataset/datasets/250917/', ...
+     'meas_MID00182_FID317808_JB_LIBRE2p2_a8_woPERewinder.dat'];
+twix_idea = mapVBVD_JB(raw_data_idea);
 
-twix = mapVBVD_JB(raw_data);
+raw_data_pulseq = ['/Users/cag/Documents/Dataset/datasets/250917/', ...
+     'meas_MID00177_FID317803_yj_seq2.dat'];
+twix_pulseq = mapVBVD_JB(raw_data_pulseq);
 %%
 twix_img = twix{2};
 PMU = twix_img.PMUdata;
+%%
 sum(sum(PMU.EXT))
 sum(sum(PMU.raw.EXT.data))
 twix_name = ['twix', '_MID00332_FID214628_BEAT_LIBREon_eye_(23_09_24)_sc_trigger'];

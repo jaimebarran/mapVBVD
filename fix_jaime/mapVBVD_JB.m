@@ -663,6 +663,10 @@ function [mdh_blob, filePos, isEOF, mdh_syncdata] = loop_mdh_read( fid, version,
         syncdata_length = 1120;  %1632
     elseif strncmp(VerString,'XA2',3)
         syncdata_length = 1120;
+    elseif strncmp(VerString,'XA6',3)
+        syncdata_length = 1920;%1920;
+    elseif strncmp(VerString,'E11',3)
+        syncdata_length = 1632;
     else
         syncdata_length = 0;
     end
@@ -747,7 +751,9 @@ function [mdh_blob, filePos, isEOF, mdh_syncdata] = loop_mdh_read( fid, version,
                 break;
             end
         end
+        
         if bitand(bitMask, bit_5)   % MDH_SYNCDATA
+        % if bitand(bitMask, bit_3)   % MDH_SYNCDATA
             % H.-L. Lee, store PMU data in mdh_syncdata
             temp = data_u8;
             temp(4)= bitget( temp(4),1);  % ubit24: keep only 1 bit from the 4th byte
